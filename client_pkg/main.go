@@ -27,5 +27,8 @@ func main() {
 		fmt.Println("链接成功")
 	}
 
+	// connfd输出的重定向
+	go client.DealResponse()
+
 	client.Run()
 }

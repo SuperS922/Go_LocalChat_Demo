@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
+	"os"
 )
 
 type Client struct {
@@ -49,6 +51,20 @@ func (client *Client) menu() bool {
 	}
 }
 
+func (client *Client) UpdateName() bool {
+	fmt.Println("请输入用户名：")
+	fmt.Scan(&client.Name)
+
+	sendMsg := "rename|" + client.Name + "\n"
+	_, err := client.connfd.Write([]byte(sendMsg))
+	if err != nil {
+		fmt.Println("connfd.Write error", err)
+		return false
+	}
+
+	return true
+}
+
 func (client *Client) Run() {
 	for client.flag != 0 {
 		for client.menu() != true {
@@ -66,10 +82,23 @@ func (client *Client) Run() {
 		case 3:
 			// 更新用户名
 			fmt.Println("更新用户名。。。")
+			client.UpdateName()
 			break
 		case 0:
 			// 退出
 			break
 		}
 	}
+}
+
+func (client *Client) DealResponse() {
+	// 与下面的 for 是相同的作用
+	// 永久阻塞监听的 IO方式   同步IO
+	io.Copy(os.Stdout, client.connfd) // 输出重定向吗？
+
+	// for {
+	// 	buf := make([]byte, 4096)
+	// 	client.connfd.Read(buf)
+	// 	fmt.Printf(buf)
+	// }
 }
