@@ -74,6 +74,32 @@ func (this *User) rename(msg string) {
 	}
 }
 
+func (this *User) sendPrivateMsg(msg string) {
+	// 1. 获取对方的用户名
+	sliceMsg := strings.Split(msg, "|")
+	remoteName := sliceMsg[1]
+	if remoteName == "" {
+		this.SendMsg("消息格式不正确，请使用\"to|张三|消息内容\"格式。\n")
+		return
+	}
+
+	// 2. 根据用户名获得 User 对象
+	remoteUser, ok := this.server.OnlineMap[remoteName]
+	if !ok {
+		this.SendMsg(remoteName + "is offline.\n")
+		return
+	}
+
+	// 3. 获取消息内容并且发送
+	content := sliceMsg[2]
+	if content == "" {
+		this.SendMsg("无消息内容\n")
+		return
+	}
+
+	remoteUser.SendMsg("[" + this.Name + "]:" + content + "\n")
+}
+
 // 用户处理消息的业务
 func (this *User) DoMessage(msg string) {
 	if msg == "who" {
@@ -86,6 +112,8 @@ func (this *User) DoMessage(msg string) {
 		this.server.mapLock.RUnlock()
 	} else if len(msg) > 7 && msg[:7] == "rename|" {
 		this.rename(msg)
+	} else if len(msg) > 4 && msg[:3] == "to|" {
+		this.sendPrivateMsg(msg)
 	} else {
 		this.server.BroadCast(this, msg)
 	}
