@@ -43,7 +43,7 @@ func (this *User) Online() {
 
 // 用户的下线业务
 func (this *User) Offline() {
-	// 用户下线，将用户加入 OnlineMap 中
+	// 用户下线
 	this.server.mapLock.Lock()
 	delete(this.server.OnlineMap, this.Name)
 	this.server.mapLock.Unlock()

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"runtime"
 	"sync"
+	"time"
 )
 
 type Server struct {
@@ -57,6 +59,9 @@ func (this *Server) Handler(connfd net.Conn) {
 
 	user.Online()
 
+	// 监听用户是否活跃的channel
+	isLive := make(chan bool)
+
 	// 接收客户端发送的消息
 	go func() {
 		buf := make([]byte, 4096)
@@ -78,11 +83,27 @@ func (this *Server) Handler(connfd net.Conn) {
 
 			// 用户针对 msg 进行消息处理
 			user.DoMessage(msg)
+
+			// 任意的操作都代表该用户是活跃的
+			isLive <- true
 		}
 	}()
 
 	// 当前handler阻塞
-	select {}
+	for {
+		select {
+		case <-isLive:
+
+		case <-time.After(time.Second * 30):
+			user.SendMsg("长时间未活跃，你已被强制下线。\n")
+			user.Offline()
+			// 销毁资源
+			close(user.C)
+			connfd.Close()
+
+			runtime.Goexit()
+		}
+	}
 }
 
 // 启动服务器的接口
