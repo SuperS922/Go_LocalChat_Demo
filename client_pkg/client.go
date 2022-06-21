@@ -28,16 +28,3 @@ func NewClient(serverIp string, serverPort int) *Client {
 
 	return &client
 }
-
-func main() {
-	client := NewClient("127.0.0.1", 8888)
-	if client == nil {
-		fmt.Println("链接服务器失败")
-		return
-	} else {
-		fmt.Println("链接成功")
-	}
-
-	// 此处阻塞
-	select {}
-}
