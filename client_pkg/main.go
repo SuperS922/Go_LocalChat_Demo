@@ -27,6 +27,5 @@ func main() {
 		fmt.Println("链接成功")
 	}
 
-	// 此处阻塞
-	select {}
+	client.Run()
 }
